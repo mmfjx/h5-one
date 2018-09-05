@@ -1,65 +1,75 @@
-// var scene = new THREE.Scene();
-// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+var container, camera, scene, renderer, particles = [], material, maps = [], textureLoader;
+    var halfX = window.innerWidth / 2;
+    var halfY = window.innerHeight / 2;
+    var mouseX = 0, mouseY = 0;
+    var fallSpeen = 2;
+    var amount = 1000;
 
-// var renderer = new THREE.WebGLRenderer();
-// renderer.setSize( window.innerWidth, window.innerHeight );
-// document.body.appendChild( renderer.domElement );
+    // 返回一个范围内内的随机数
+    function randomRange(min, max) {
+        return ((Math.random() * (max - min)) + min);
+    }
 
-// var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-// var material = new THREE.MeshBasicMaterial( { color: 0x00ff32} );
-// var cube = new THREE.Mesh( geometry, material );
-// scene.add( cube );
+    function init() {
+        container = document.createElement('div');
+        document.body.appendChild(container);
+        // 相机
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.z = 10;
+        camera.position.x = 2;
+        camera.position.y = 2;
+        // camera.lookAt({
+        //     x: 2,
+        //     y: 2,
+        //     z: 5
+        // })
+        console.log(camera);
+        // 场景
+        scene = new THREE.Scene();
+        // 纹理，应用于一个表面，或者作为一个反射或折射贴图。
+        textureLoader = new THREE.TextureLoader();
+        // console.log(textureLoader);
 
-// camera.position.z = 5;
+        maps[0] = textureLoader.load('./p6.jpg');
+        console.log(maps[0]);
+        maps[1] = textureLoader.load('./p7.jpg');
 
-// var render = function () {
-//     requestAnimationFrame( render );
 
-//     cube.rotation.x += 0.1;
-//     cube.rotation.y += 0.1;
+        for (i = 0; i< maps.length; i++) {
+            // debugger;
+             // 传入纹理，得到材料
+            material = new THREE.MeshBasicMaterial({
+                map: maps[i],
+            });
+            var particle = new THREE.Mesh( new THREE.CubeGeometry(4,4,10), material);
+            // particle.position.x = i * 2;
+            particle.position.y = i * 4;
+            particles.push(particle);
+            scene.add(particle);
+        }
 
-//     renderer.render(scene, camera);
-// };
+        renderer = new THREE.WebGLRenderer({alpha: true});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-// render();
+        container.appendChild(renderer.domElement);
+        animate();
+    }
 
-var renderer = new THREE.WebGLRenderer();
-document.body.appendChild( renderer.domElement );
-renderer.setClearColor(0x000000); // black
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+    }
 
-var scene = new THREE.Scene();
+    function render() {
+        if (camera.fov <= 2000) {
+            camera.fov += 0.1;
+        } else if (camera.fov >= 1) {
+            camera.fov -= 0.01;
+        }
+        camera.updateProjectionMatrix();
 
-// var camera = new THREE.OrthographicCamera(-2, 4, 3, -3, 1, 10);
-// camera.position.set(3, 3, 5);
-// camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-var camera = new THREE.PerspectiveCamera(60, 400 / 300, 5, 10);
-camera.position.set(0, 0, 5);
-scene.add(camera);
-
-// var material = new THREE.MeshBasicMaterial({
-//         color: 0xffffff, // white
-//         wireframe: true
-// });
-
-var cube = new THREE.Mesh(new THREE.CubeGeometry(2, 2, 2),
-    new THREE.MeshLambertMaterial({
-        color: 0xffff00
-    })
-);
-scene.add(cube);
-// plane
-// var planeGeo = new THREE.PlaneGeometry(1.5, 1.5);
-// var plane = new THREE.Mesh(planeGeo, material);
-// plane.position.x = 1;
-// scene.add(plane);
-
-// triangle
-// var triGeo = new THREE.Geometry();
-// triGeo.vertices = [new THREE.Vector3(0, -0.8, 0),
-//     new THREE.Vector3(-2, -0.8, 0), new THREE.Vector3(-1, 0.8, 0)];
-// triGeo.faces.push(new THREE.Face3(0, 2, 1));
-// var triangle = new THREE.Mesh(triGeo, material);
-// scene.add(triangle);
-
-renderer.render(scene, camera);
+        // 重新渲染
+        renderer.render( scene, camera );
+    }
+    init()
